@@ -1,4 +1,4 @@
-# Fotogram: Backend Project
+# Fotogram: Backend Development Project
 
 Backend and database university project developed for a social-network-style application focused on image sharing.
 
