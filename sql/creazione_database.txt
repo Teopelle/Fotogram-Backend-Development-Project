@@ -1,0 +1,348 @@
+CREATE TABLE UTENTE (
+	Mail			VARCHAR (100)	NOT NULL,
+	Username		VARCHAR (30)	NOT NULL,
+	Passw			VARCHAR (300)	NOT NULL,
+	Immagine		TEXT,
+	numFollow		INT		NOT NULL DEFAULT 0,
+	numFollowers		INT		NOT NULL DEFAULT 0,
+	dataNomina		TIMESTAMP,		
+	èModeratore		BOOLEAN		NOT NULL DEFAULT FALSE,
+	èAmministratore		BOOLEAN		NOT NULL DEFAULT FALSE,
+	postModerati		INT		NOT NULL DEFAULT 0,
+	èBannato		BOOLEAN		NOT NULL DEFAULT FALSE,
+	PRIMARY KEY (mail, username, passw)
+);
+
+CREATE TABLE SESSIONE (
+	IdSessione		SERIAL		PRIMARY KEY,
+	DataLogin		TIMESTAMP	NOT NULL,
+	MailUtente		VARCHAR (100)	NOT NULL,
+	UsernameUtente		VARCHAR (30)	NOT NULL,
+	PasswordUtente		VARCHAR (300)	NOT NULL,
+	FOREIGN KEY (mailUtente, usernameUtente, passwordUtente)
+		REFERENCES UTENTE (mail, username, passw)
+		ON DELETE CASCADE
+);
+
+
+CREATE TABLE POST (
+	Id			SERIAL		PRIMARY KEY,
+	Username 		VARCHAR (30)	NOT NULL,
+	NumLike			INT		NOT NULL DEFAULT 0,
+	NumFlag			INT		NOT NULL DEFAULT 0,
+	èModerato		BOOLEAN		NOT NULL DEFAULT FALSE,
+	Data			TIMESTAMP	NOT NULL DEFAULT now(),
+	eTesto			BOOLEAN		NOT NULL,
+	eImmagine		BOOLEAN		NOT NULL,
+	TextContent		TEXT,
+	ImageUrl		TEXT,
+	CONSTRAINT check_tipo CHECK (
+		(eTesto = TRUE AND eImmagine = FALSE AND 				TextContent IS NOT NULL AND ImageUrl IS NULL) 			OR 	
+		(eTesto = FALSE AND eImmagine = TRUE AND 				TextContent IS NULL AND ImageUrl IS NOT NULL)
+	)
+);
+
+CREATE TABLE MODERA (
+	MailU			VARCHAR (100)	NOT NULL,
+	UsernameU		VARCHAR (30)	NOT NULL,
+	PasswU			VARCHAR (300)	NOT NULL,
+	IdPost			INT		NOT NULL,
+	DataModerazione		TIMESTAMP	NOT NULL,
+	PRIMARY KEY (mailU, usernameU, passwU, idPost),
+	FOREIGN KEY (mailU, usernameU, passwU)
+		REFERENCES UTENTE (mail, username, passw)
+		ON DELETE CASCADE,
+	FOREIGN KEY (idPost)
+		REFERENCES POST (id)
+		ON DELETE CASCADE
+);
+
+CREATE TABLE FLAG_POST (
+	MailU			VARCHAR (100)	NOT NULL,
+	UsernameU		VARCHAR (30)	NOT NULL,
+	PasswU			VARCHAR (300)	NOT NULL,
+	IdPost			INT		NOT NULL,
+	DataFlag		TIMESTAMP	NOT NULL,
+	PRIMARY KEY (mailU, usernameU, passwU, idPost),
+	FOREIGN KEY (mailU, usernameU, passwU)
+		REFERENCES UTENTE (mail, username, passw)
+		ON DELETE CASCADE,
+	FOREIGN KEY (idPost)
+		REFERENCES POST (id)
+		ON DELETE CASCADE
+);
+
+CREATE TABLE CREA (
+	MailU			VARCHAR (100)	NOT NULL,
+	UsernameU		VARCHAR (30)	NOT NULL,
+	PasswU			VARCHAR (300)	NOT NULL,
+	IdPost			INT		NOT NULL,
+	PRIMARY KEY (mailU, usernameU, passwU, idPost),
+	FOREIGN KEY (mailU, usernameU, passwU)
+		REFERENCES UTENTE (mail, username, passw)
+		ON DELETE CASCADE,
+	FOREIGN KEY (idPost)
+		REFERENCES POST (id)
+		ON DELETE CASCADE
+);
+
+CREATE TABLE LIKE_POST (
+	MailU			VARCHAR (100)	NOT NULL,
+	UsernameU		VARCHAR (30)	NOT NULL,
+	PasswU			VARCHAR (300)	NOT NULL,
+	IdPost			INT		NOT NULL,
+	DataLike		TIMESTAMP	NOT NULL,
+	PRIMARY KEY (mailU, usernameU, passwU, idPost),
+	FOREIGN KEY (mailU, usernameU, passwU)
+		REFERENCES UTENTE (mail, username, passw)
+		ON DELETE CASCADE,
+	FOREIGN KEY (idPost)
+		REFERENCES POST (id)
+		ON DELETE CASCADE
+);
+
+CREATE TABLE SEGUE (
+	MailSeguito		VARCHAR (100)	NOT NULL,
+	UsernameSeguito		VARCHAR (30)	NOT NULL,
+	PasswSeguito		VARCHAR (300)	NOT NULL,
+	MailSeguitore		VARCHAR (100)	NOT NULL,
+	UsernameSeguitore	VARCHAR (30)	NOT NULL,
+	PasswSeguitore		VARCHAR (300)	NOT NULL,
+	DataFollow		TIMESTAMP	NOT NULL,
+	PRIMARY KEY (mailSeguito, usernameSeguito, passwSeguito, mailSeguitore, usernameSeguitore, passwSeguitore),
+	FOREIGN KEY (mailSeguito, usernameSeguito, passwSeguito)
+		REFERENCES UTENTE (mail, username, passw)
+		ON DELETE CASCADE,
+	FOREIGN KEY (mailSeguitore, usernameSeguitore, passwSeguitore)
+		REFERENCES UTENTE (mail, username, passw)
+		ON DELETE CASCADE
+);
+
+
+
+
+-- Popolamento basi di dati
+
+-- Utenti
+
+INSERT INTO UTENTE VALUES
+('mario@uni.it', 'mario', 'pass1', '/resources/1757240984634-250px-Calcio_Como_-_logo_(Italy,_2019-).svg.png', 2, 1, '2025-06-01T10:00:00', TRUE,  TRUE,  0, FALSE),
+('anna@uni.it', 'anna', 'pass2', NULL, 1, 0, '2025-06-15T14:30:00', TRUE,  FALSE, 0, FALSE),
+('luca@uni.it', 'luca', 'pass3', NULL, 1, 1, NULL, FALSE, FALSE, 0, FALSE),
+('giulia@uni.it', 'giulia', 'pass4', NULL, 0, 2, NULL, FALSE, FALSE, 0, FALSE),
+('paolo@uni.it', 'paolo', 'pass5', '/resources/1757247221450-adesivi-juventus-di-torino.jpg', 0, 0, NULL, FALSE, FALSE, 0, FALSE);
+
+
+-- Sessioni
+
+INSERT INTO SESSIONE VALUES
+(DEFAULT, '2025-07-18T08:00:00', 'mario@uni.it', 'mario', 'pass1'),
+(DEFAULT, '2025-07-18T08:05:00', 'anna@uni.it', 'anna', 'pass2'),
+(DEFAULT, '2025-07-18T08:10:00', 'luca@uni.it', 'luca', 'pass3');
+
+
+-- Post
+
+INSERT INTO POST VALUES
+(DEFAULT, 'mario', 0,0, FALSE, '2025-07-17T12:00:00', TRUE,  FALSE, 'Forza Como', NULL),
+(DEFAULT, 'anna',  0,0, FALSE, '2025-07-17T13:00:00', FALSE, TRUE, NULL, '/resources/1757325105487-FC_Internazionale_Milano_2021.svg.png'),
+(DEFAULT, 'luca',  0,0, FALSE, '2025-07-16T09:30:00', TRUE,  FALSE, 'Ciao mondo', NULL),
+(DEFAULT, 'mario', 0,0, FALSE, '2025-07-15T18:45:00', FALSE, TRUE, NULL, '/resources/1757325151784-Logo_of_AC_Milan.svg.png'),
+(DEFAULT, 'giulia',0,0, FALSE, '2025-07-14T20:20:00', TRUE,  FALSE, 'Sono Giulia', NULL);
+
+
+-- Crea 
+
+INSERT INTO crea (mailu, usernameu, passwu, idpost)
+SELECT u.mail, u.username, u.passw, p.id
+FROM utente u
+JOIN post p ON p.username = 'mario' AND p.data = '2025-07-17T12:00:00' AND p.textcontent = 'Forza Como'
+WHERE u.mail = 'mario@uni.it' AND u.username = 'mario';
+
+
+INSERT INTO crea (mailu, usernameu, passwu, idpost)
+SELECT u.mail, u.username, u.passw, p.id
+FROM utente u
+JOIN post p ON p.username = 'anna' AND p.data = '2025-07-17T13:00:00' AND p.imageurl = '/resources/1757325105487-FC_Internazionale_Milano_2021.svg.png'
+WHERE u.mail = 'anna@uni.it' AND u.username = 'anna';
+
+
+INSERT INTO crea (mailu, usernameu, passwu, idpost)
+SELECT u.mail, u.username, u.passw, p.id
+FROM utente u
+JOIN post p ON p.username = 'luca' AND p.data = '2025-07-16T09:30:00' AND p.textcontent = 'Ciao mondo'
+WHERE u.mail = 'luca@uni.it' AND u.username = 'luca';
+
+
+INSERT INTO crea (mailu, usernameu, passwu, idpost)
+SELECT u.mail, u.username, u.passw, p.id
+FROM utente u
+JOIN post p ON p.username = 'mario' AND p.data = '2025-07-15T18:45:00' AND p.imageurl = '/resources/1757325151784-Logo_of_AC_Milan.svg.png'
+WHERE u.mail = 'mario@uni.it' AND u.username = 'mario';
+
+
+INSERT INTO crea (mailu, usernameu, passwu, idpost)
+SELECT u.mail, u.username, u.passw, p.id
+FROM utente u
+JOIN post p ON p.username = 'giulia' AND p.data = '2025-07-14T20:20:00' AND p.textcontent = 'Sono Giulia'
+WHERE u.mail = 'giulia@uni.it' AND u.username = 'giulia';
+
+
+-- SEGUE
+
+INSERT INTO segue (mailseguito, usernameseguito, passwseguito,
+                   mailseguitore, usernameseguitore, passwseguitore, datafollow)
+SELECT seguito.mail, seguito.username, seguito.passw,
+       seguitore.mail, seguitore.username, seguitore.passw,
+       '2025-07-10T11:00:00'
+FROM utente seguito
+JOIN utente seguitore
+  ON seguitore.mail='anna@uni.it' AND seguitore.username='anna'
+WHERE seguito.mail='mario@uni.it' AND seguito.username='mario';
+
+
+INSERT INTO segue (mailseguito, usernameseguito, passwseguito,
+                   mailseguitore, usernameseguitore, passwseguitore, datafollow)
+SELECT seguito.mail, seguito.username, seguito.passw,
+       seguitore.mail, seguitore.username, seguitore.passw,
+       '2025-07-12T09:00:00'
+FROM utente seguito
+JOIN utente seguitore
+  ON seguitore.mail='mario@uni.it' AND seguitore.username='mario'
+WHERE seguito.mail='luca@uni.it' AND seguito.username='luca';
+
+
+INSERT INTO segue (mailseguito, usernameseguito, passwseguito,
+                   mailseguitore, usernameseguitore, passwseguitore, datafollow)
+SELECT seguito.mail, seguito.username, seguito.passw,
+       seguitore.mail, seguitore.username, seguitore.passw,
+       '2025-07-13T15:30:00'
+FROM utente seguito
+JOIN utente seguitore
+  ON seguitore.mail='mario@uni.it' AND seguitore.username='mario'
+WHERE seguito.mail='giulia@uni.it' AND seguito.username='giulia';
+
+
+INSERT INTO segue (mailseguito, usernameseguito, passwseguito,
+                   mailseguitore, usernameseguitore, passwseguitore, datafollow)
+SELECT seguito.mail, seguito.username, seguito.passw,
+       seguitore.mail, seguitore.username, seguitore.passw,
+       '2025-07-14T16:00:00'
+FROM utente seguito
+JOIN utente seguitore
+  ON seguitore.mail='luca@uni.it' AND seguitore.username='luca'
+WHERE seguito.mail='giulia@uni.it' AND seguito.username='giulia';
+
+
+
+-- Like 
+
+INSERT INTO like_post (mailu, usernameu, passwu, idpost, datalike)
+SELECT u.mail, u.username, u.passw, p.id, '2025-07-17T12:05:00'
+FROM utente u
+JOIN post p ON p.username = 'mario' AND p.data = '2025-07-17T12:00:00' AND p.textcontent = 'Forza Como'
+WHERE u.mail = 'anna@uni.it' AND u.username = 'anna';
+
+
+INSERT INTO like_post (mailu, usernameu, passwu, idpost, datalike)
+SELECT u.mail, u.username, u.passw, p.id, '2025-07-17T12:10:00'
+FROM utente u
+JOIN post p ON p.username = 'mario' AND p.data = '2025-07-17T12:00:00' AND p.textcontent = 'Forza Como'
+WHERE u.mail = 'luca@uni.it' AND u.username = 'luca';
+
+
+INSERT INTO like_post (mailu, usernameu, passwu, idpost, datalike)
+SELECT u.mail, u.username, u.passw, p.id, '2025-07-17T13:15:00'
+FROM utente u
+JOIN post p ON p.username = 'anna' AND p.data = '2025-07-17T13:00:00' AND p.imageurl = '/resources/1757325105487-FC_Internazionale_Milano_2021.svg.png'
+WHERE u.mail = 'giulia@uni.it' AND u.username = 'giulia';
+
+
+INSERT INTO like_post (mailu, usernameu, passwu, idpost, datalike)
+SELECT u.mail, u.username, u.passw, p.id, '2025-07-16T09:45:00'
+FROM utente u
+JOIN post p ON p.username = 'luca' AND p.data = '2025-07-16T09:30:00' AND p.textcontent = 'Ciao mondo'
+WHERE u.mail = 'mario@uni.it' AND u.username = 'mario';
+
+
+INSERT INTO like_post (mailu, usernameu, passwu, idpost, datalike)
+SELECT u.mail, u.username, u.passw, p.id, '2025-07-14T21:00:00'
+FROM utente u
+JOIN post p ON p.username = 'giulia' AND p.data = '2025-07-14T20:20:00' AND p.textcontent = 'Sono Giulia'
+WHERE u.mail = 'anna@uni.it' AND u.username = 'anna';
+
+
+-- Flag 
+
+INSERT INTO flag_post (mailu, usernameu, passwu, idpost, dataflag)
+SELECT u.mail, u.username, u.passw, p.id, '2025-07-17T13:30:00'
+FROM utente u
+JOIN post p ON p.username = 'anna' AND p.data = '2025-07-17T13:00:00' AND p.imageurl = '/resources/1757325105487-FC_Internazionale_Milano_2021.svg.png'
+WHERE u.mail = 'luca@uni.it' AND u.username = 'luca';
+
+
+INSERT INTO flag_post (mailu, usernameu, passwu, idpost, dataflag)
+SELECT u.mail, u.username, u.passw, p.id, '2025-07-15T19:00:00'
+FROM utente u
+JOIN post p ON p.username = 'mario' AND p.data = '2025-07-15T18:45:00' AND p.imageurl = '/resources/1757325151784-Logo_of_AC_Milan.svg.png'
+WHERE u.mail = 'giulia@uni.it' AND u.username = 'giulia';
+
+
+INSERT INTO flag_post (mailu, usernameu, passwu, idpost, dataflag)
+SELECT u.mail, u.username, u.passw, p.id, '2025-07-14T22:00:00'
+FROM utente u
+JOIN post p ON p.username = 'giulia' AND p.data = '2025-07-14T20:20:00' AND p.textcontent = 'Sono Giulia'
+WHERE u.mail = 'anna@uni.it' AND u.username = 'anna';
+
+
+-- Moderazioni 
+
+INSERT INTO modera (mailu, usernameu, passwu, idpost, datamoderazione)
+SELECT u.mail, u.username, u.passw, p.id, '2025-06-25T10:00:00'
+FROM utente u
+JOIN post p ON p.username = 'mario' AND p.data = '2025-07-17T12:00:00' AND p.textcontent = 'Forza Como'
+WHERE u.mail = 'anna@uni.it' AND u.username = 'anna';
+
+
+INSERT INTO modera (mailu, usernameu, passwu, idpost, datamoderazione)
+SELECT u.mail, u.username, u.passw, p.id, '2025-07-01T11:00:00'
+FROM utente u
+JOIN post p ON p.username = 'anna' AND p.data = '2025-07-17T13:00:00' AND p.imageurl = '/resources/1757325105487-FC_Internazionale_Milano_2021.svg.png'
+WHERE u.mail = 'anna@uni.it' AND u.username = 'anna';
+
+
+INSERT INTO modera (mailu, usernameu, passwu, idpost, datamoderazione)
+SELECT u.mail, u.username, u.passw, p.id, '2025-07-10T14:00:00'
+FROM utente u
+JOIN post p ON p.username = 'luca' AND p.data = '2025-07-16T09:30:00' AND p.textcontent = 'Ciao mondo'
+WHERE u.mail = 'anna@uni.it' AND u.username = 'anna';
+
+
+INSERT INTO modera (mailu, usernameu, passwu, idpost, datamoderazione)
+SELECT u.mail, u.username, u.passw, p.id, '2025-07-15T16:00:00'
+FROM utente u
+JOIN post p ON p.username = 'mario' AND p.data = '2025-07-15T18:45:00' AND p.imageurl = '/resources/1757325151784-Logo_of_AC_Milan.svg.png'
+WHERE u.mail = 'anna@uni.it' AND u.username = 'anna';
+
+
+
+-- Update contatori e ban utente
+
+-- numFollow e numFollowers in UTENTE
+UPDATE UTENTE u SET
+  numFollow    = (SELECT COUNT(*) FROM SEGUE s WHERE s.MailSeguitore    = 		u.Mail AND s.UsernameSeguitore = u.Username AND 			s.PasswSeguitore = u.Passw),
+  numFollowers = (SELECT COUNT(*) FROM SEGUE s WHERE s.MailSeguito     = 		u.Mail AND s.UsernameSeguito  = u.Username AND 				s.PasswSeguito    = u.Passw);
+
+-- numLike e numFlag in POST
+UPDATE POST p SET
+  NumLike = (SELECT COUNT(*) FROM LIKE_POST  l WHERE l.IdPost = p.Id),
+  NumFlag = (SELECT COUNT(*) FROM FLAG_POST  f WHERE f.IdPost = p.Id);
+
+-- postModerati in UTENTE
+UPDATE UTENTE u SET
+  postModerati = (SELECT COUNT(*) FROM MODERA m WHERE m.MailU=u.Mail AND 		m.UsernameU=u.Username AND m.PasswU=u.Passw);
+
+-- ban automatico in UTENTE
+UPDATE UTENTE
+SET èBannato = TRUE
+WHERE postModerati > 3;
